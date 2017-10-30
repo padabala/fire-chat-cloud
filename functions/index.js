@@ -38,7 +38,7 @@ exports.sendPushNotification = functions.database.ref('/chats/{chatHead}/{messag
     const payload = {
         data : {
             title  : 'Fire Chat',
-            sender : senderId,
+            senderId : senderId,
             message  : message
         }
     }
@@ -48,9 +48,11 @@ exports.sendPushNotification = functions.database.ref('/chats/{chatHead}/{messag
         content_available : true
     }
 
-    return admin.database().ref('users/${receiver}/fcmToken').once('value')
-        .then((results) => {
-            admin.messaging.sendToDevice(results, payload, options)
+    return admin.database().ref(`/users/${receiverId}/fcmToken`).once('value')
+        .then(function(results) {
+            var fcmToken = results.val();
+            console.log("Token = ", fcmToken);
+           return admin.messaging().sendToDevice(fcmToken, payload, options)
                 .then(function(response) {
                     console.log("Successfully sent message:", response);
                 })
